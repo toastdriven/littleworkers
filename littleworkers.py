@@ -53,7 +53,16 @@ class Pool(object):
         By default, simply copies the provided command ``list`` to the
         internal ``commands`` list.
         """
-        self.commands = commands
+        # Make a copy of the commands to run.
+        self.commands = commands[:]
+    
+    def command_count(self):
+        """
+        Returns the number of commands to be run.
+        
+        Useful as a hook if you use a different structure for the commands.
+        """
+        return len(self.commands)
     
     def next_command(self):
         """
@@ -125,11 +134,18 @@ class Pool(object):
         if commands is not None:
             self.prepare_commands(commands)
         
-        while len(self.commands):
+        keep_running = True
+        
+        while keep_running:
             self.inspect_pool()
             
-            if len(self.pool) <= min(self.commands, self.workers):
+            if len(self.pool) <= min(self.command_count(), self.workers):
                 command = self.next_command()
+                
+                if not command:
+                    self.busy_wait()
+                    continue
+                
                 proc = self.create_process(command)
                 self.add_to_pool(proc)
             
@@ -140,4 +156,5 @@ class Pool(object):
                 if self.pool[pid].poll() >= 0:
                     self.remove_from_pool(pid)
             
+            keep_running = self.command_count() or len(self.pool) > 0
             self.busy_wait()

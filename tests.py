@@ -1,3 +1,5 @@
+import logging
+from Queue import Queue, Empty
 import subprocess
 import unittest
 from littleworkers import Pool, NotEnoughWorkers
@@ -6,6 +8,39 @@ from littleworkers import Pool, NotEnoughWorkers
 class FakeProcess(object):
     def __init__(self, *args, **kwargs):
         pass
+
+
+class StdOutPool(Pool):
+    def __init__(self, *args, **kwargs):
+        super(StdOutPool, self).__init__(*args, **kwargs)
+        self.collected_output = []
+    
+    def create_process(self, command):
+        logging.debug("Starting process to handle command '%s'." % command)
+        return subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+    
+    def remove_from_pool(self, pid):
+        self.collected_output.append(self.pool[pid].stdout.read())
+        return super(StdOutPool, self).remove_from_pool(pid)
+
+
+class QueuePool(Pool):
+    def __init__(self, *args, **kwargs):
+        super(QueuePool, self).__init__(*args, **kwargs)
+        self.commands = Queue()
+    
+    def prepare_commands(self, commands):
+        for command in commands:
+            self.commands.put(command)
+    
+    def command_count(self):
+        return self.commands.qsize()
+    
+    def next_command(self):
+        try:
+            return self.commands.get()
+        except Empty:
+            return None
 
 
 class BasicUsage(unittest.TestCase):
@@ -89,4 +124,33 @@ class BasicUsage(unittest.TestCase):
         
         lil.remove_from_pool(1)
         self.assertEqual(len(lil.pool), 0)
+
+
+class StdOutUsage(unittest.TestCase):
+    def test_usage(self):
+        commands = [
+            'ulimit -n',
+            'uname -a',
+        ]
+        
+        lil = StdOutPool(workers=2)
+        lil.run(commands)
+        
+        self.assertEqual(set(lil.collected_output), set(['2560\n', 'Darwin Europa.local 10.7.0 Darwin Kernel Version 10.7.0: Sat Jan 29 15:17:16 PST 2011; root:xnu-1504.9.37~1/RELEASE_I386 i386\n']))
+
+
+class QueueUsage(unittest.TestCase):
+    def test_usage(self):
+        commands = [
+            'ls',
+            'cd /tmp',
+        ]
+        
+        lil = QueuePool(workers=2)
+        lil.prepare_commands(commands)
+        self.assertTrue(isinstance(lil.commands, Queue))
+        self.assertEqual(lil.commands.qsize(), 2)
+        
+        lil.run()
+        self.assertEqual(lil.commands.qsize(), 0)
     
