@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='littleworkers',
-    version='0.1.1',
+    version='0.2.0',
     description='Little process-based workers to do your bidding.',
     author='Daniel Lindsley',
     author_email='daniel@toastdriven.com',
