@@ -114,6 +114,6 @@ Requirements
 
 
 :author: Daniel Lindsley
-:updated: 2011/05/19
-:version: 0.2.0
+:updated: 2011/05/28
+:version: 0.3.0
 :license: BSD
