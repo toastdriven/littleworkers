@@ -129,9 +129,13 @@ class Pool(object):
         """
         A hook for inspecting the pool's current status.
         
-        By default, simply makes a log message.
+        By default, simply makes a log message and returns the length of
+        the pool.
         """
-        logging.debug("Current pool size: %s" % len(self.pool))
+        # Call ``len()`` just once.
+        pool_size = len(self.pool)
+        logging.debug("Current pool size: %s" % pool_size)
+        return pool_size
     
     def busy_wait(self):
         """

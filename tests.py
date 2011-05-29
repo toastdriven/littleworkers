@@ -90,6 +90,18 @@ class BasicUsage(unittest.TestCase):
         
         cmd3 = lil.next_command()
         self.assertEqual(cmd3, None)
+
+    def test_inspect_pool(self):
+        lil = Pool(workers=1)
+        self.assertEqual(lil.inspect_pool(), 0)
+        
+        ls_command = lil.create_process('sleep 1')
+        lil.add_to_pool(ls_command)
+        self.assertEqual(lil.inspect_pool(), 1)
+        
+        tmp_command = lil.create_process('sleep 1')
+        lil.add_to_pool(tmp_command)
+        self.assertEqual(lil.inspect_pool(), 2)
     
     def test_add_to_pool(self):
         lil = Pool(workers=2)
