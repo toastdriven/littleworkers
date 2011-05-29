@@ -46,6 +46,7 @@ class Pool(object):
         self.workers = workers
         self.pool = {}
         self.commands = []
+        self.callback = None
         self.debug = debug
         self.wait_time = wait_time
     
@@ -104,6 +105,15 @@ class Pool(object):
         kwargs = self.process_kwargs(command)
         return subprocess.Popen(command, **kwargs)
     
+    def set_callback(self, callback=None):
+        """
+        Sets up a callback to be run whenever a process finishes.
+
+        If called with ``None`` or without any args, it will clear any
+        existing callback.
+        """
+        self.callback = callback
+    
     def add_to_pool(self, proc):
         """
         Adds a process to the pool.
@@ -145,7 +155,7 @@ class Pool(object):
         """
         time.sleep(self.wait_time)
     
-    def run(self, commands=None):
+    def run(self, commands=None, callback=None):
         """
         The method to actually execute all the commands with the pool.
         
@@ -154,6 +164,9 @@ class Pool(object):
         """
         if commands is not None:
             self.prepare_commands(commands)
+
+        if callback is not None:
+            self.set_callback(callback)
         
         keep_running = True
         
@@ -175,6 +188,9 @@ class Pool(object):
                 logging.debug("Checking status on %s" % self.pool[pid].pid)
                 
                 if self.pool[pid].poll() >= 0:
+                    if self.callback:
+                        self.callback(self.pool[pid])
+
                     self.remove_from_pool(pid)
             
             keep_running = self.command_count() or len(self.pool) > 0

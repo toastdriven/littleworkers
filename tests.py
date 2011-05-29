@@ -151,11 +151,47 @@ class BasicUsage(unittest.TestCase):
         lil.run(['ls'])
         end = time.time()
         self.assertTrue(end - start > 1.0)
-
+    
     def test_process_kwargs(self):
         lil = Pool(workers=1)
         self.assertEqual(lil.process_kwargs(None), {'shell': True})
         self.assertEqual(lil.process_kwargs('ls -al'), {'shell': True})
+    
+    def test_set_callback(self):
+        lil = Pool(workers=1)
+        self.assertEqual(lil.callback, None)
+        
+        lil.set_callback(lambda: 'hello')
+        self.assertNotEqual(lil.callback, None)
+        self.assertEqual(lil.callback(), 'hello')
+        
+        # Test manual clearing.
+        lil.set_callback(None)
+        self.assertEqual(lil.callback, None)
+        
+        # Test without args/kwargs.
+        lil.set_callback()
+        self.assertEqual(lil.callback, None)
+    
+    def test_callback(self):
+        lil = Pool(workers=1)
+        commands = [
+            'sleep 1',
+            'sleep 1',
+            'i_am_a_super-jacked-command_you_ought-not_to-have_on-your-1_system',
+            'sleep 1',
+        ]
+        
+        # Track exit codes.
+        codes = []
+        
+        def track(proc):
+            codes.append(proc.returncode)
+        
+        lil.run(commands, callback=track)
+        
+        self.assertEqual(lil.callback, track)
+        self.assertEqual(codes, [0, 0, 127, 0])
 
 
 class StdOutUsage(unittest.TestCase):

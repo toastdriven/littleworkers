@@ -90,6 +90,22 @@ You want to use a ``Queue`` instead of the default ``list``::
             except Empty:
                 return None
 
+You want to setup a callback::
+
+    from littleworkers import Pool
+    
+    codes = []
+    
+    def track(proc):
+        codes.append("%s returned status %s" % (proc.pid, proc.returncode))
+    
+    commands = [
+        'sleep 1',
+        'busted_command --here',
+        'sleep 1',
+    ]
+    lil.run(commands, callback=track)
+
 
 Requirements
 ============
