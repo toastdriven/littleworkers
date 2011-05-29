@@ -140,6 +140,11 @@ class BasicUsage(unittest.TestCase):
         end = time.time()
         self.assertTrue(end - start > 1.0)
 
+    def test_process_kwargs(self):
+        lil = Pool(workers=1)
+        self.assertEqual(lil.process_kwargs(None), {'shell': True})
+        self.assertEqual(lil.process_kwargs('ls -al'), {'shell': True})
+
 
 class StdOutUsage(unittest.TestCase):
     def test_usage(self):

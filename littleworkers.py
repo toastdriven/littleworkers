@@ -82,13 +82,27 @@ class Pool(object):
         
         return None
     
+    def process_kwargs(self, command):
+        """
+        A hook to alter the kwargs given to ``subprocess.Process``.
+
+        Takes a ``command`` argument, which is unused by default, but can be
+        used to switch the flags used.
+
+        By default, only specifies ``shell=True``.
+        """
+        return {
+            'shell': True,
+        }
+    
     def create_process(self, command):
         """
         Given a provided command (string or list), creates a new process
         to execute the command.
         """
         logging.debug("Starting process to handle command '%s'." % command)
-        return subprocess.Popen(command, shell=True)
+        kwargs = self.process_kwargs(command)
+        return subprocess.Popen(command, **kwargs)
     
     def add_to_pool(self, proc):
         """
