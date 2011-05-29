@@ -1,4 +1,5 @@
 import logging
+import time
 from Queue import Queue, Empty
 import subprocess
 import unittest
@@ -125,6 +126,20 @@ class BasicUsage(unittest.TestCase):
         lil.remove_from_pool(1)
         self.assertEqual(len(lil.pool), 0)
 
+    def test_long_wait_time(self):
+        lil = Pool(workers=1)
+        start = time.time()
+        lil.run(['ls'])
+        end = time.time()
+        self.assertTrue(end - start < 1.0)
+        
+        # Now with a longer wait.
+        lil = Pool(workers=1, wait_time=1.25)
+        start = time.time()
+        lil.run(['ls'])
+        end = time.time()
+        self.assertTrue(end - start > 1.0)
+
 
 class StdOutUsage(unittest.TestCase):
     def test_usage(self):
@@ -136,7 +151,7 @@ class StdOutUsage(unittest.TestCase):
         lil = StdOutPool(workers=2)
         lil.run(commands)
         
-        self.assertEqual(set(lil.collected_output), set(['2560\n', 'Darwin Europa.local 10.7.0 Darwin Kernel Version 10.7.0: Sat Jan 29 15:17:16 PST 2011; root:xnu-1504.9.37~1/RELEASE_I386 i386\n']))
+        self.assertEqual(set(lil.collected_output), set(['256\n', 'Darwin Europa.local 10.7.0 Darwin Kernel Version 10.7.0: Sat Jan 29 15:17:16 PST 2011; root:xnu-1504.9.37~1/RELEASE_I386 i386\n']))
 
 
 class QueueUsage(unittest.TestCase):

@@ -36,8 +36,10 @@ class Pool(object):
     Optionally accepts a ``workers`` kwarg. Default is 1.
     
     Optionally accepts a ``debug`` kwarg. Default is False.
+    
+    Optionally accepts a ``wait_time`` kwarg. Default is 0.1.
     """
-    def __init__(self, workers=1, debug=False):
+    def __init__(self, workers=1, debug=False, wait_time=0.1):
         if workers < 1:
             raise NotEnoughWorkers("You need to use at least one worker.")
         
@@ -45,6 +47,7 @@ class Pool(object):
         self.pool = {}
         self.commands = []
         self.debug = debug
+        self.wait_time = wait_time
     
     def prepare_commands(self, commands):
         """
@@ -122,7 +125,7 @@ class Pool(object):
         
         By default, sleeps for 0.1 seconds.
         """
-        time.sleep(0.1)
+        time.sleep(self.wait_time)
     
     def run(self, commands=None):
         """
