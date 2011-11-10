@@ -31,7 +31,7 @@ Usage
 Usage is trivial::
 
     from littleworkers import Pool
-    
+
     # Define your commands.
     commands = [
         'ls -al',
@@ -40,71 +40,14 @@ Usage is trivial::
         'echo "Hello There."',
         'sleep 2 && echo "Done."'
     ]
-    
+
     # Setup a pool. Since I have two cores, I'll use two workers.
     lil = Pool(workers=2)
-    
+
     # Run!
     lil.run(commands)
 
-You want the stdout back::
-
-    import subprocess
-    from littleworkers import Pool
-    
-    
-    class MyPool(Pool):
-        def __init__(self, *args, **kwargs):
-            super(MyPool, self).__init__(*args, **kwargs)
-            self.collected_output = []
-        
-        def create_process(self, command):
-            logging.debug("Starting process to handle command '%s'." % command)
-            return subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-        
-        def remove_from_pool(self, pid):
-            self.collected_output.append(self.pool[pid].stdout.read())
-            return super(MyPool, self).remove_from_pool(pid)
-
-You want to use a ``Queue`` instead of the default ``list``::
-
-    from Queue import Queue, Empty
-    from littleworkers import Pool
-    
-    
-    class QueuePool(Pool):
-        def __init__(self, *args, **kwargs):
-            super(QueuePool, self).__init__(*args, **kwargs)
-            self.commands = Queue()
-        
-        def prepare_commands(self, commands):
-            for command in commands:
-                self.commands.put(command)
-        
-        def command_count(self):
-            return self.commands.qsize()
-        
-        def next_command(self):
-            try:
-                return self.commands.get()
-            except Empty:
-                return None
-
-You want to setup a callback::
-
-    from littleworkers import Pool
-    
-    codes = []
-    
-    def track(proc):
-        codes.append("%s returned status %s" % (proc.pid, proc.returncode))
-    
-    commands = [
-        'sleep 1',
-        'busted_command --here',
-        'sleep 1',
-    ]
-    lil.run(commands, callback=track)
+For more advanced uses, please see the API documentation.
 
 
 Requirements
@@ -114,6 +57,6 @@ Requirements
 
 
 :author: Daniel Lindsley
-:updated: 2011/05/28
-:version: 0.3.0
+:updated: 2011/11/10
+:version: 0.3.1
 :license: BSD
