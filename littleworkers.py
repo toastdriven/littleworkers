@@ -173,7 +173,7 @@ class Pool(object):
         while keep_running:
             self.inspect_pool()
 
-            if len(self.pool) <= min(self.command_count(), self.workers):
+            if (len(self.pool) < self.workers) and (self.command_count() > 0):
                 command = self.next_command()
 
                 if not command:
