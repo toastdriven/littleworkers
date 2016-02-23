@@ -6,4 +6,5 @@ Primary:
 Contributors:
 
 * BJ Dierkes (derks) for various patches.
-
+* Corey Christous (cchristous) for fixing the numbers of workers used in
+  parallel

@@ -7,7 +7,7 @@ except ImportError:
 
 setup(
     name='littleworkers',
-    version='0.3.2',
+    version='0.4.0',
     description='Little process-based workers to do your bidding.',
     author='Daniel Lindsley',
     author_email='daniel@toastdriven.com',
